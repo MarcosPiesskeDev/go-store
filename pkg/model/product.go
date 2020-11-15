@@ -2,10 +2,11 @@ package model
 
 import (
 	"database/sql"
-	"go-store-back/src/entity"
-	"go-store-back/src/util"
 	"log"
 	"reflect"
+
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
 )
 
 type ProductModel struct {

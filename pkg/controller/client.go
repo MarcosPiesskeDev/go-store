@@ -3,14 +3,14 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"go-store-back/src/config"
-	"go-store-back/src/entity"
-	"go-store-back/src/model"
-	"go-store-back/src/util"
+	"net/http"
 	"strconv"
 	"strings"
 
-	"net/http"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/config"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/model"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
 )
 
 func InitClientMethods(rw http.ResponseWriter, req *http.Request) {

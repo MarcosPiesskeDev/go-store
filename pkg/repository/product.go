@@ -1,22 +1,26 @@
-package model
+package repository
 
 import (
 	"database/sql"
 	"log"
 	"reflect"
 
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/database"
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
 )
 
 type ProductModel struct {
-	Db *sql.DB
+	db *sql.DB
+}
+
+func NewProductModel(db *sql.DB) *ProductModel {
+	return &ProductModel{db: db}
 }
 
 //Method get all product
 func (pm ProductModel) GetAllProduct() ([]entity.Product, error) {
 
-	rows, err := pm.Db.Query("SELECT * FROM product")
+	rows, err := pm.db.Query("SELECT * FROM product")
 	var product = entity.Product{}
 	var products []entity.Product
 
@@ -25,17 +29,17 @@ func (pm ProductModel) GetAllProduct() ([]entity.Product, error) {
 	}
 
 	for rows.Next() {
-		er := rows.Scan(&product.Id, &product.Id_store, &product.Name, &product.Price)
+		er := rows.Scan(&product.ID, &product.IDStore, &product.Name, &product.Price)
 
 		if er != nil {
 			return products, er
 		}
 
 		productAtt := entity.Product{
-			Id:       product.Id,
-			Id_store: product.Id_store,
-			Name:     product.Name,
-			Price:    product.Price,
+			ID:      product.ID,
+			IDStore: product.IDStore,
+			Name:    product.Name,
+			Price:   product.Price,
 		}
 		products = append(products, productAtt)
 	}
@@ -47,7 +51,7 @@ func (pm ProductModel) GetAllProduct() ([]entity.Product, error) {
 func (pm ProductModel) GetProductById(id int) (entity.Product, error) {
 	var product = entity.Product{}
 
-	rows, err := pm.Db.Query("SELECT * FROM product WHERE id = ?", id)
+	rows, err := pm.db.Query("SELECT * FROM product WHERE id = ?", id)
 	defer rows.Close()
 
 	if err != nil {
@@ -55,17 +59,17 @@ func (pm ProductModel) GetProductById(id int) (entity.Product, error) {
 	}
 
 	for rows.Next() {
-		er := rows.Scan(&product.Id, &product.Id_store, &product.Name, &product.Price)
+		er := rows.Scan(&product.ID, &product.IDStore, &product.Name, &product.Price)
 
 		if er != nil {
 			return product, er
 		}
 
 		product = entity.Product{
-			Id:       product.Id,
-			Id_store: product.Id_store,
-			Name:     product.Name,
-			Price:    product.Price,
+			ID:      product.ID,
+			IDStore: product.IDStore,
+			Name:    product.Name,
+			Price:   product.Price,
 		}
 	}
 	return product, nil
@@ -73,12 +77,12 @@ func (pm ProductModel) GetProductById(id int) (entity.Product, error) {
 
 //Method create product
 func (pm ProductModel) CreateProduct(product entity.Product) error {
-	rows, err := pm.Db.Exec("INSERT INTO product (id_store, name, price) VALUES (?,?,?)", product.Id_store, product.Name, product.Price)
+	rows, err := pm.db.Exec("INSERT INTO product (id_store, name, price) VALUES (?,?,?)", product.IDStore, product.Name, product.Price)
 
 	if err != nil {
 		return err
 	}
-	var parsIdInt = int64(product.Id)
+	var parsIdInt = int64(product.ID)
 	if reflect.TypeOf(parsIdInt).Kind() == reflect.String {
 		log.Println("We got an id with a type string and we need with type int")
 	}
@@ -90,13 +94,13 @@ func (pm ProductModel) CreateProduct(product entity.Product) error {
 
 //Method update product
 func (pm ProductModel) ChangeProductById(id int, product entity.Product) (bool, error) {
-	idExists := util.VerifySExists(id, "product")
+	idExists := database.VerifySExists(id, "product")
 
 	if !idExists {
 		return false, nil
 	}
 
-	_, err := pm.Db.Query("UPDATE product SET  id_store = ?, name = ?, price = ? WHERE id = ?", product.Id_store, product.Name, product.Price, id)
+	_, err := pm.db.Query("UPDATE product SET  id_store = ?, name = ?, price = ? WHERE id = ?", product.IDStore, product.Name, product.Price, id)
 
 	if err != nil {
 		return false, err
@@ -107,13 +111,13 @@ func (pm ProductModel) ChangeProductById(id int, product entity.Product) (bool, 
 
 //Method delete product
 func (pm ProductModel) DeleteProductById(id int) (bool, error) {
-	idExists := util.VerifySExists(id, "product")
+	idExists := database.VerifySExists(id, "product")
 
 	if !idExists {
 		return false, nil
 	}
 
-	_, err := pm.Db.Query("DELETE FROM product WHERE id = ?", id)
+	_, err := pm.db.Query("DELETE FROM product WHERE id = ?", id)
 
 	if err != nil {
 		return false, err

@@ -1,10 +1,8 @@
-package util
-
-import "github.com/MarcosPiesskeDev/go-store-back/pkg/config"
+package database
 
 //Check if exists an entity on table
 func VerifySExists(id int, table string) bool {
-	db, err := config.GetDb()
+	db, err := GetConn()
 
 	if err != nil {
 		return false

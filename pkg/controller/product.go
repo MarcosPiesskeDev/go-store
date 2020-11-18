@@ -7,48 +7,45 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/config"
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/model"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/repository"
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
 )
 
-func InitProductMethods(rw http.ResponseWriter, req *http.Request) {
+type ProductController struct {
+	productRepo *repository.ProductModel
+}
+
+func NewProductController(productRepo *repository.ProductModel) *ProductController {
+	return &ProductController{productRepo: productRepo}
+}
+
+func (pc *ProductController) InitProductMethods(rw http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		getProduct(rw, req)
+		pc.getProduct(rw, req)
 	case "POST":
-		createProduct(rw, req)
+		pc.createProduct(rw, req)
 	case "PUT":
-		updateProduct(rw, req)
+		pc.updateProduct(rw, req)
 	case "DELETE":
-		deleteProduct(rw, req)
+		pc.deleteProduct(rw, req)
 	default:
 		util.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
 	}
 }
 
 //Get all products
-func getProduct(rw http.ResponseWriter, req *http.Request) {
-	db, err := config.GetDb()
+func (pc *ProductController) getProduct(rw http.ResponseWriter, req *http.Request) {
 	id := strings.TrimPrefix(req.URL.Path, "/product/")
 	idconv, _ := strconv.Atoi(id)
 
-	if err != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	productM := model.ProductModel{
-		Db: db,
-	}
-
 	//Get product by id
 	if id != "" {
-		product, er := productM.GetProductById(idconv)
+		product, er := pc.productRepo.GetProductById(idconv)
 
 		if er != nil {
-			util.ErrResponse(rw, http.StatusBadGateway, err.Error())
+			util.ErrResponse(rw, http.StatusBadGateway, er.Error())
 			return
 		}
 
@@ -56,9 +53,9 @@ func getProduct(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	products, er := productM.GetAllProduct()
+	products, err := pc.productRepo.GetAllProduct()
 
-	if er != nil {
+	if err != nil {
 		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -67,25 +64,20 @@ func getProduct(rw http.ResponseWriter, req *http.Request) {
 }
 
 //Create Product
-func createProduct(rw http.ResponseWriter, req *http.Request) {
+func (pc *ProductController) createProduct(rw http.ResponseWriter, req *http.Request) {
 	var product entity.Product
 
 	err := json.NewDecoder(req.Body).Decode(&product)
-
-	db, err := config.GetDb()
 
 	if err != nil {
 		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	productM := model.ProductModel{
-		Db: db,
-	}
+	er := pc.productRepo.CreateProduct(product)
 
-	er := productM.CreateProduct(product)
 	if er != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
+		util.ErrResponse(rw, http.StatusBadRequest, er.Error())
 		return
 	}
 
@@ -93,25 +85,20 @@ func createProduct(rw http.ResponseWriter, req *http.Request) {
 }
 
 //Update Product
-func updateProduct(rw http.ResponseWriter, req *http.Request) {
+func (pc *ProductController) updateProduct(rw http.ResponseWriter, req *http.Request) {
 	id := strings.TrimPrefix(req.URL.Path, "/product/")
 	idconv, _ := strconv.Atoi(id)
 	var product entity.Product
 
 	if id != "" {
 		err := json.NewDecoder(req.Body).Decode(&product)
-		db, err := config.GetDb()
 
 		if err != nil {
 			util.ErrResponse(rw, http.StatusBadRequest, err.Error())
 			return
 		}
 
-		productM := model.ProductModel{
-			Db: db,
-		}
-
-		idExists, er := productM.ChangeProductById(idconv, product)
+		idExists, er := pc.productRepo.ChangeProductById(idconv, product)
 
 		util.ErrorsReturnEntity(rw, er, idExists, product)
 		return
@@ -121,22 +108,13 @@ func updateProduct(rw http.ResponseWriter, req *http.Request) {
 }
 
 //Delete Product
-func deleteProduct(rw http.ResponseWriter, req *http.Request) {
+func (pc *ProductController) deleteProduct(rw http.ResponseWriter, req *http.Request) {
 	id := strings.TrimPrefix(req.URL.Path, "/product/")
 	idconv, _ := strconv.Atoi(id)
 
-	db, err := config.GetDb()
 	if id != "" {
-		if err != nil {
-			util.ErrResponse(rw, http.StatusBadRequest, err.Error())
-			return
-		}
 
-		productM := model.ProductModel{
-			Db: db,
-		}
-
-		productExists, er := productM.DeleteProductById(idconv)
+		productExists, er := pc.productRepo.DeleteProductById(idconv)
 
 		util.ErrorsReturnEntity(rw, er, productExists, "Product deleted with success")
 	}

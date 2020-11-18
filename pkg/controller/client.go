@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/http_response"
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/repository"
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
 )
 
 type ClientController struct {
@@ -31,7 +31,7 @@ func (cc *ClientController) InitClientMethods(rw http.ResponseWriter, req *http.
 	case "DELETE":
 		cc.deleteClient(rw, req)
 	default:
-		util.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
+		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
 	}
 }
 
@@ -45,22 +45,22 @@ func (cc *ClientController) getClient(rw http.ResponseWriter, req *http.Request)
 		client, er := cc.clientRepo.GetClientById(idconv)
 
 		if er != nil {
-			util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+			http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 			return
 		}
 
-		util.JsonResponse(rw, http.StatusOK, client)
+		http_response.JsonResponse(rw, http.StatusOK, client)
 		return
 	}
 
 	clients, er := cc.clientRepo.GetAllClient()
 
 	if er != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 		return
 	}
 
-	util.JsonResponse(rw, http.StatusOK, clients)
+	http_response.JsonResponse(rw, http.StatusOK, clients)
 }
 
 //Create Client
@@ -69,18 +69,18 @@ func (cc *ClientController) createClient(rw http.ResponseWriter, req *http.Reque
 	err := json.NewDecoder(req.Body).Decode(&client)
 
 	if err != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	er := cc.clientRepo.CreateClient(client)
 
 	if er != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 		return
 	}
 
-	util.JsonResponse(rw, http.StatusOK, client)
+	http_response.JsonResponse(rw, http.StatusOK, client)
 }
 
 //Update Client
@@ -92,17 +92,17 @@ func (cc *ClientController) updateClient(rw http.ResponseWriter, req *http.Reque
 	if id != "" {
 		err := json.NewDecoder(req.Body).Decode(&client) // Geting client from request
 		if err != nil {
-			util.ErrResponse(rw, http.StatusBadRequest, err.Error())
+			http_response.ErrResponse(rw, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		idExists, er := cc.clientRepo.ChangeClientById(idconv, client)
 
-		util.ErrorsReturnEntity(rw, er, idExists, client)
+		http_response.ErrorsReturnEntity(rw, er, idExists, client)
 		return
 	}
 
-	util.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
 }
 
 //Delete a client
@@ -114,9 +114,9 @@ func (cc *ClientController) deleteClient(rw http.ResponseWriter, req *http.Reque
 
 		clientExists, er := cc.clientRepo.DeleteClientById(idconv)
 
-		util.ErrorsReturnEntity(rw, er, clientExists, "Client deleted with success!")
+		http_response.ErrorsReturnEntity(rw, er, clientExists, "Client deleted with success!")
 		return
 	}
 
-	util.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
 }

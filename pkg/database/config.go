@@ -1,4 +1,4 @@
-package config
+package database
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetDb() (*sql.DB, error) {
+func GetConn() (*sql.DB, error) {
 
 	err := godotenv.Load()
 

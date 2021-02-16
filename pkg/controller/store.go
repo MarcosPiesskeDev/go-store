@@ -9,7 +9,7 @@ import (
 
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/entity"
 	"github.com/MarcosPiesskeDev/go-store-back/pkg/repository"
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/util"
+	"github.com/MarcosPiesskeDev/go-store-back/pkg/http_response"
 )
 
 type StoreController struct {
@@ -31,7 +31,7 @@ func (sc *StoreController) InitStoreMethods(rw http.ResponseWriter, req *http.Re
 	case "DELETE":
 		sc.deleteStore(rw, req)
 	default:
-		util.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
+		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
 	}
 }
 
@@ -45,22 +45,22 @@ func (sc *StoreController) getStore(rw http.ResponseWriter, req *http.Request) {
 		store, er := sc.storeRepo.GetStoreById(idconv)
 
 		if er != nil {
-			util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+			http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 			return
 		}
 
-		util.JsonResponse(rw, http.StatusOK, store)
+		http_response.JsonResponse(rw, http.StatusOK, store)
 		return
 	}
 
 	stores, er := sc.storeRepo.GetAllStore()
 
 	if er != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 		return
 	}
 
-	util.JsonResponse(rw, http.StatusOK, stores)
+	http_response.JsonResponse(rw, http.StatusOK, stores)
 
 }
 
@@ -70,17 +70,17 @@ func (sc *StoreController) createStore(rw http.ResponseWriter, req *http.Request
 	err := json.NewDecoder(req.Body).Decode(&store)
 
 	if err != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, err.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	er := sc.storeRepo.CreateStore(store)
 	if er != nil {
-		util.ErrResponse(rw, http.StatusBadRequest, er.Error())
+		http_response.ErrResponse(rw, http.StatusBadRequest, er.Error())
 		return
 	}
 
-	util.JsonResponse(rw, http.StatusOK, store)
+	http_response.JsonResponse(rw, http.StatusOK, store)
 }
 
 //Update Store
@@ -94,11 +94,11 @@ func (sc *StoreController) updateStore(rw http.ResponseWriter, req *http.Request
 
 		idExists, er := sc.storeRepo.ChangeStoreById(idconv, store)
 
-		util.ErrorsReturnEntity(rw, er, idExists, store)
+		http_response.ErrorsReturnEntity(rw, er, idExists, store)
 		return
 	}
 
-	util.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
 }
 
 //Delete Store
@@ -110,9 +110,9 @@ func (sc *StoreController) deleteStore(rw http.ResponseWriter, req *http.Request
 
 		storeExists, er := sc.storeRepo.DeleteStoreById(idconv)
 
-		util.ErrorsReturnEntity(rw, er, storeExists, "Store deleted with success")
+		http_response.ErrorsReturnEntity(rw, er, storeExists, "Store deleted with success")
 		return
 	}
-	util.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
 
 }

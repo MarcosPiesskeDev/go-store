@@ -20,7 +20,7 @@ func main() {
 		log.Fatal("Error loading .env file-> ", err)
 	}
 
-	port := os.Getenv("API_PORT")
+	port := ":" + os.Getenv("API_PORT")
 	if port == "" {
 		port = ":8080"
 	}

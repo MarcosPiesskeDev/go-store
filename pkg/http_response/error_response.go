@@ -1,4 +1,4 @@
-package util
+package http_response
 
 import (
 	"errors"

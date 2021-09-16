@@ -2,18 +2,19 @@ package client
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/marcos-dev88/go-store-back/pkg/database"
-	"github.com/marcos-dev88/go-store-back/pkg/entity"
 	"log"
 	"reflect"
+	"time"
 )
 
 type Repository interface {
-	GetAllClient() ([]entity.Client, error)
-	GetClientById(id int) (entity.Client, error)
-	CreateClient(client entity.Client) error
-	ChangeClientById(id int, client entity.Client) (bool, error)
-	DeleteClientById(id int) (bool, error)
+	getAllClient() ([]Client, error)
+	getClientById(id int) (Client, error)
+	createClient(client Client) (Client, error)
+	updateClient(id int, client Client) (Client, error)
+	deleteClientById(id int) (bool, error)
 }
 
 type repository struct {
@@ -24,43 +25,53 @@ func NewRepository(db *sql.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r repository) GetAllClient() ([]entity.Client, error) {
+func (r repository) getAllClient() ([]Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client")
-	var clients []entity.Client
-	var client = entity.Client{}
+	var clients []Client
+	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
 
 	if err != nil {
 		return clients, err
 	}
 
 	for rows.Next() {
-
-		er := rows.Scan(&client.ID, &client.IDStore, &client.NickName, &client.Password, &client.Role, &client.FirstName, &client.LastName, &client.Cash, &client.BirthDate)
+		er := rows.Scan(
+			&client.id,
+			&client.idStore,
+			&client.nickName,
+			&client.password,
+			&client.role,
+			&client.firstName,
+			&client.lastName,
+			&client.cash,
+			&client.birthDate,
+			)
 
 		if er != nil {
 			return clients, er
 		}
 
-		clientAtt := entity.Client{
-			ID:        client.ID,
-			IDStore:   client.IDStore,
-			NickName:  client.NickName,
-			Password:  client.Password,
-			Role:      client.Role,
-			FirstName: client.FirstName,
-			LastName:  client.LastName,
-			Cash:      client.Cash,
-			BirthDate: client.BirthDate,
-		}
+		clientAtt := *NewClient(
+			client.id,
+			client.idStore,
+			client.nickName,
+			client.password,
+			client.role,
+			client.firstName,
+			client.lastName,
+			client.cash,
+			client.birthDate,
+		)
+
 		clients = append(clients, clientAtt)
 	}
 	return clients, nil
 }
 
 //Method get client by id
-func (r repository) GetClientById(id int) (entity.Client, error) {
+func (r repository) getClientById(id int) (Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client WHERE id = ?", id)
-	var client = entity.Client{}
+	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
 
 	if err != nil {
 		return client, err
@@ -68,67 +79,87 @@ func (r repository) GetClientById(id int) (entity.Client, error) {
 
 	for rows.Next() {
 
-		er := rows.Scan(&client.ID, &client.IDStore, &client.NickName, &client.Password, &client.Role, &client.FirstName, &client.LastName, &client.Cash, &client.BirthDate)
+		er := rows.Scan(
+			&client.id,
+			&client.idStore,
+			&client.nickName,
+			&client.password,
+			&client.role,
+			&client.firstName,
+			&client.lastName,
+			&client.cash,
+			&client.birthDate,
+		)
 
 		if er != nil {
 			return client, er
 		}
 
-		client = entity.Client{
-			ID:        client.ID,
-			IDStore:   client.IDStore,
-			NickName:  client.NickName,
-			Password:  client.Password,
-			Role:      client.Role,
-			FirstName: client.FirstName,
-			LastName:  client.LastName,
-			Cash:      client.Cash,
-			BirthDate: client.BirthDate,
-		}
+		client = *NewClient(
+			client.id,
+			client.idStore,
+			client.nickName,
+			client.password,
+			client.role,
+			client.firstName,
+			client.lastName,
+			client.cash,
+			client.birthDate,
+		)
 	}
 	return client, nil
 }
 
 //Method create client
-func (r repository) CreateClient(client entity.Client) error {
-	dbStr := client.BirthDate
+func (r repository) createClient(client Client) (Client, error) {
+	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
-	rows, err := r.db.Exec("INSERT INTO client (id_store, nick_name, password, role, first_name, last_name, cash, birth_date) VALUES (?,?,?,?,?,?,?,?)", client.IDStore, client.NickName, client.Password, client.Role, client.FirstName, client.LastName, client.Cash, dbDateFormated)
+	rows, err := r.db.Exec("INSERT INTO client (id_store, nick_name, password, role, first_name, last_name, cash, birth_date) VALUES (?,?,?,?,?,?,?,?)",
+		client.idStore,
+		client.nickName,
+		client.password,
+		client.role,
+		client.firstName,
+		client.lastName,
+		client.cash,
+		dbDateFormated,
+	)
+
 	if err != nil {
-		return err
+		return Client{}, err
 	}
 
-	var parsIdInt = int64(client.ID)
+	var parsIdInt = int64(client.id)
 	if reflect.TypeOf(parsIdInt).Kind() == reflect.String {
 		log.Println("We got an id with a type string and we need with type int")
 	}
 
 	parsIdInt, _ = rows.LastInsertId()
 
-	return nil
+	return client, nil
 }
 
 //Method update client
-func (r repository) ChangeClientById(id int, client entity.Client) (bool, error) {
+func (r repository) updateClient(id int, client Client) (Client, error) {
 	idExists := database.VerifySExists(id, "client")
-	dbStr := client.BirthDate
+	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 
 	if !idExists {
-		return false, nil
+		return Client{}, errors.New("doesn't a client with this id")
 	}
 
-	_, er := r.db.Query("UPDATE client SET id_store = ?, nick_name = ?, password = ?, role = ?, first_name = ?, last_name = ?, cash = ?, birth_date = ? WHERE id = ?", client.ID, client.IDStore, client.NickName, client.Password, client.Role, client.FirstName, client.LastName, client.Cash, dbDateFormated)
+	_, er := r.db.Query("UPDATE client SET id_store = ?, nick_name = ?, password = ?, role = ?, first_name = ?, last_name = ?, cash = ?, birth_date = ? WHERE id = ?", client.id, client.idStore, client.nickName, client.password, client.role, client.firstName, client.lastName, client.cash, dbDateFormated)
 
 	if er != nil {
-		return false, er
+		return Client{}, er
 	}
 
-	return true, nil
+	return client, nil
 }
 
 //Method delete client
-func (r repository) DeleteClientById(id int) (bool, error) {
+func (r repository) deleteClientById(id int) (bool, error) {
 	idExists := database.VerifySExists(id, "client")
 
 	if !idExists {

@@ -11,9 +11,10 @@ import (
 
 type Repository interface {
 	getAllClient() ([]Client, error)
-	getClientById(id int) (Client, error)
+	getClientById(clientId int) (Client, error)
+	getClientsByStoreId(storeId int) ([]Client, error)
 	createClient(client Client) (Client, error)
-	updateClient(id int, client Client) (Client, error)
+	updateClient(clientId int, client Client) (Client, error)
 	deleteClientById(id int) (bool, error)
 }
 
@@ -25,7 +26,7 @@ func NewRepository(db *sql.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r repository) getAllClient() ([]Client, error) {
+func (r *repository) getAllClient() ([]Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client")
 	var clients []Client
 	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
@@ -69,7 +70,7 @@ func (r repository) getAllClient() ([]Client, error) {
 }
 
 //Method get client by id
-func (r repository) getClientById(id int) (Client, error) {
+func (r *repository) getClientById(id int) (Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client WHERE id = ?", id)
 	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
 
@@ -110,8 +111,51 @@ func (r repository) getClientById(id int) (Client, error) {
 	return client, nil
 }
 
+func (r *repository) getClientsByStoreId(storeId int) ([]Client, error) {
+	rows, err := r.db.Query("SELECT * FROM client WHERE id_store = ?", storeId)
+	var clients []Client
+	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
+
+	if err != nil {
+		return clients, err
+	}
+
+	for rows.Next() {
+		er := rows.Scan(
+			&client.id,
+			&client.idStore,
+			&client.nickName,
+			&client.password,
+			&client.role,
+			&client.firstName,
+			&client.lastName,
+			&client.cash,
+			&client.birthDate,
+		)
+
+		if er != nil {
+			return clients, er
+		}
+
+		clientAtt := *NewClient(
+			client.id,
+			client.idStore,
+			client.nickName,
+			client.password,
+			client.role,
+			client.firstName,
+			client.lastName,
+			client.cash,
+			client.birthDate,
+		)
+
+		clients = append(clients, clientAtt)
+	}
+	return clients, nil
+}
+
 //Method create client
-func (r repository) createClient(client Client) (Client, error) {
+func (r *repository) createClient(client Client) (Client, error) {
 	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 	rows, err := r.db.Exec("INSERT INTO client (id_store, nick_name, password, role, first_name, last_name, cash, birth_date) VALUES (?,?,?,?,?,?,?,?)",
@@ -140,8 +184,8 @@ func (r repository) createClient(client Client) (Client, error) {
 }
 
 //Method update client
-func (r repository) updateClient(id int, client Client) (Client, error) {
-	idExists := database.VerifySExists(id, "client")
+func (r *repository) updateClient(id int, client Client) (Client, error) {
+	idExists := database.VerifySExists(id, "client") // IT NEEDS TO BE REFACTORED
 	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 

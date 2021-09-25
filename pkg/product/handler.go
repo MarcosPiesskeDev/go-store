@@ -35,7 +35,7 @@ func (h *handler) ProductHandler(rw http.ResponseWriter, req *http.Request) {
 	case "DELETE":
 		h.deleteProduct(rw, req)
 	default:
-		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
+		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("error: method not allowed").Error())
 	}
 }
 
@@ -104,7 +104,7 @@ func (h *handler) updateProduct(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("error: undefined id").Error())
 }
 
 //Delete Product
@@ -115,8 +115,8 @@ func (h *handler) deleteProduct(rw http.ResponseWriter, req *http.Request) {
 
 		productExists, er := h.service.deleteProduct(id)
 
-		http_response.ErrorsReturnEntity(rw, er, productExists, "Product deleted with success")
+		http_response.ErrorsReturnEntity(rw, er, productExists, "message: product deleted with success")
 	}
 
-	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("error: undefined id").Error())
 }

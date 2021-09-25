@@ -36,7 +36,7 @@ func (h *handler) ClientHandler(rw http.ResponseWriter, req *http.Request) {
 	case "DELETE":
 		h.deleteClient(rw, req)
 	default:
-		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("Method not Allowed").Error())
+		http_response.ErrResponse(rw, http.StatusMethodNotAllowed, errors.New("error: method not allowed").Error())
 	}
 }
 
@@ -109,7 +109,7 @@ func (h *handler) updateClient(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("error: undefined id").Error())
 }
 
 //Delete a client
@@ -119,13 +119,13 @@ func (h *handler) deleteClient(rw http.ResponseWriter, req *http.Request) {
 	if len(id) > 0 {
 
 		if isClientDeleted := h.service.deleteClient(id); isClientDeleted {
-			http_response.JsonResponse(rw, http.StatusOK, "client deleted with success!")
+			http_response.JsonResponse(rw, http.StatusOK, "message: client deleted with success!")
 			return
 		}
 
-		http_response.ErrorsReturnEntity(rw, nil, false, "client deleted with success!")
+		http_response.ErrorsReturnEntity(rw, nil, false, "message: client deleted with success!")
 		return
 	}
 
-	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("Undefined id").Error())
+	http_response.ErrResponse(rw, http.StatusBadRequest, errors.New("error: undefined id").Error())
 }

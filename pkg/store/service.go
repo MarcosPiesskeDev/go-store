@@ -17,6 +17,10 @@ type service struct{
 	repository Repository
 }
 
+func NewService(repository Repository) *service{
+	return &service{repository: repository}
+}
+
 func (s service) getStoreList() ([]Store, error){
 	storeList, err := s.repository.getStoreList()
 

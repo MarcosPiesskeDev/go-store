@@ -30,7 +30,7 @@ func (s *service) getClient(clientId string) (Client, error) {
 		return *NewClient(0, 0, "", "", "", "", "", 0, time.Time{}), errors.New("id is empty")
 	}
 
-	client, er := s.repository.getClientById(idconv)
+	client, er := s.repository.GetClientById(idconv)
 
 	if er != nil {
 		return client, er
@@ -41,7 +41,7 @@ func (s *service) getClient(clientId string) (Client, error) {
 
 //Get Client List
 func (s *service) getClientList() ([]Client, error) {
-	clientList, err := s.repository.getAllClient()
+	clientList, err := s.repository.GetAllClient()
 
 	if err != nil {
 		return []Client{}, err
@@ -53,7 +53,7 @@ func (s *service) getClientList() ([]Client, error) {
 //Create Client
 func (s *service) createClient(client Client) (Client, error) {
 
-	createdClient, er := s.repository.createClient(client)
+	createdClient, er := s.repository.CreateClient(client)
 
 	if er != nil {
 		return *NewClient(0, 0, "", "", "", "", "", 0, time.Time{}), er
@@ -70,7 +70,7 @@ func (s *service) updateClient(clientId string, client Client) (Client, error) {
 		return *NewClient(0, 0, "", "", "", "", "", 0, time.Time{}), errors.New("id is empty")
 	}
 
-	updatedClient, er := s.repository.updateClient(idconv, client)
+	updatedClient, er := s.repository.UpdateClient(idconv, client)
 
 	if er != nil {
 		return *NewClient(0, 0, "", "", "", "", "", 0, time.Time{}), er
@@ -86,7 +86,7 @@ func (s *service) deleteClient(clientId string) bool {
 	if len(clientId) == 0 {
 		return false
 	}
-	isDeletedUser, er := s.repository.deleteClientById(idconv)
+	isDeletedUser, er := s.repository.DeleteClientById(idconv)
 
 	if er != nil {
 		return false

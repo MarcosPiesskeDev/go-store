@@ -10,12 +10,12 @@ import (
 )
 
 type Repository interface {
-	getAllClient() ([]Client, error)
-	getClientById(clientId int) (Client, error)
-	getClientsByStoreId(storeId int) ([]Client, error)
-	createClient(client Client) (Client, error)
-	updateClient(clientId int, client Client) (Client, error)
-	deleteClientById(id int) (bool, error)
+	GetAllClient() ([]Client, error)
+	GetClientById(clientId int) (Client, error)
+	GetClientsByStoreId(storeId int) ([]Client, error)
+	CreateClient(client Client) (Client, error)
+	UpdateClient(clientId int, client Client) (Client, error)
+	DeleteClientById(id int) (bool, error)
 }
 
 type repository struct {
@@ -26,7 +26,7 @@ func NewRepository(db *sql.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r *repository) getAllClient() ([]Client, error) {
+func (r *repository) GetAllClient() ([]Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client")
 	var clients []Client
 	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
@@ -70,7 +70,7 @@ func (r *repository) getAllClient() ([]Client, error) {
 }
 
 //Method get client by id
-func (r *repository) getClientById(id int) (Client, error) {
+func (r *repository) GetClientById(id int) (Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client WHERE id = ?", id)
 	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
 
@@ -111,7 +111,7 @@ func (r *repository) getClientById(id int) (Client, error) {
 	return client, nil
 }
 
-func (r *repository) getClientsByStoreId(storeId int) ([]Client, error) {
+func (r *repository) GetClientsByStoreId(storeId int) ([]Client, error) {
 	rows, err := r.db.Query("SELECT * FROM client WHERE id_store = ?", storeId)
 	var clients []Client
 	var client = *NewClient(0, 0, "", "", "", "", "", 0, time.Time{})
@@ -155,7 +155,7 @@ func (r *repository) getClientsByStoreId(storeId int) ([]Client, error) {
 }
 
 //Method create client
-func (r *repository) createClient(client Client) (Client, error) {
+func (r *repository) CreateClient(client Client) (Client, error) {
 	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 	rows, err := r.db.Exec("INSERT INTO client (id_store, nick_name, password, role, first_name, last_name, cash, birth_date) VALUES (?,?,?,?,?,?,?,?)",
@@ -184,7 +184,7 @@ func (r *repository) createClient(client Client) (Client, error) {
 }
 
 //Method update client
-func (r *repository) updateClient(id int, client Client) (Client, error) {
+func (r *repository) UpdateClient(id int, client Client) (Client, error) {
 	idExists := database.VerifySExists(id, "client") // IT NEEDS TO BE REFACTORED
 	dbStr := client.birthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
@@ -203,7 +203,7 @@ func (r *repository) updateClient(id int, client Client) (Client, error) {
 }
 
 //Method delete client
-func (r repository) deleteClientById(id int) (bool, error) {
+func (r repository) DeleteClientById(id int) (bool, error) {
 	idExists := database.VerifySExists(id, "client")
 
 	if !idExists {

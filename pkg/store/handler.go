@@ -11,6 +11,7 @@ import (
 type Handler interface {
 	StoreHandler(rw http.ResponseWriter, req *http.Request)
 	getStore(rw http.ResponseWriter, req *http.Request)
+	createStore(rw http.ResponseWriter, req *http.Request)
 	updateStore(rw http.ResponseWriter, req *http.Request)
 	deleteStore(rw http.ResponseWriter, req *http.Request)
 }

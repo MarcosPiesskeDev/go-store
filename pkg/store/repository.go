@@ -12,8 +12,8 @@ import (
 )
 
 type Repository interface {
-	getStoreList(clients []client.Client, products []product.Product) ([]Store, error)
-	getStoreById(storeId int, clients []client.Client, products []product.Product) (Store, error)
+	getStoreList() ([]Store, error)
+	getStoreById(storeId int) (Store, error)
 	createStore(store Store) (Store, error)
 	updateStore(storeId int, store Store) (Store, error)
 	deleteStore(storeId int) (bool, error)
@@ -21,15 +21,21 @@ type Repository interface {
 
 type repository struct {
 	db *sql.DB
+	clientRepo client.Repository
+	productsRepo product.Repository
 }
 
-func NewRepository(db *sql.DB) *repository {
-	return &repository{db: db}
+func NewRepository(db *sql.DB, clientRepo client.Repository, productRepo product.Repository) *repository {
+	return &repository{
+		db: db,
+		clientRepo: clientRepo,
+		productsRepo: productRepo,
+	}
 }
 
-func (r *repository) getStoreList(clients []client.Client, products []product.Product) ([]Store, error) {
+func (r *repository) getStoreList() ([]Store, error) {
 	var storeList []Store
-	newStore := NewStore(0, "", "", "", "", "", clients, products)
+	newStore := NewStore(0, "", "", "", "", "", nil, nil)
 
 	rows, err := r.db.Query(
 		"SELECT * FROM store " +
@@ -51,6 +57,18 @@ func (r *repository) getStoreList(clients []client.Client, products []product.Pr
 			&newStore.state,
 		)
 
+		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.id)
+
+		if err != nil {
+			return nil, err
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +80,8 @@ func (r *repository) getStoreList(clients []client.Client, products []product.Pr
 			newStore.companyName,
 			newStore.city,
 			newStore.state,
-			newStore.clients,
-			newStore.products,
+			clientListByStoreId,
+			productListByStoreId,
 		)
 
 		storeList = append(storeList, *storeAtt)
@@ -72,8 +90,8 @@ func (r *repository) getStoreList(clients []client.Client, products []product.Pr
 	return storeList, nil
 }
 
-func (r *repository) getStoreById(storeId int, clients []client.Client, products []product.Product) (Store, error) {
-	newStore := NewStore(0, "", "", "", "", "", clients, products)
+func (r *repository) getStoreById(storeId int) (Store, error) {
+	newStore := *NewStore(0, "", "", "", "", "", nil, nil)
 
 	rows, err := r.db.Query(
 		"SELECT * FROM store "+
@@ -83,7 +101,7 @@ func (r *repository) getStoreById(storeId int, clients []client.Client, products
 	)
 
 	if err != nil {
-		return *newStore, err
+		return newStore, err
 	}
 
 	for rows.Next() {
@@ -96,23 +114,35 @@ func (r *repository) getStoreById(storeId int, clients []client.Client, products
 			&newStore.state,
 		)
 
+		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.id)
+
 		if err != nil {
-			return *newStore, err
+			return newStore, err
 		}
 
-		newStore = NewStore(
+		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.id)
+
+		if err != nil {
+			return newStore, err
+		}
+
+		if err != nil {
+			return newStore, err
+		}
+
+		newStore = *NewStore(
 			newStore.id,
 			newStore.cnpj,
 			newStore.name,
 			newStore.companyName,
 			newStore.city,
 			newStore.state,
-			newStore.clients,
-			newStore.products,
+			clientListByStoreId,
+			productListByStoreId,
 		)
 	}
 
-	return *newStore, nil
+	return newStore, nil
 }
 
 func (r *repository) createStore(store Store) (Store, error) {

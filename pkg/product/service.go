@@ -24,13 +24,13 @@ func NewService(repository Repository) *service {
 func (s *service) getProduct(productId string) (Product, error) {
 	idconv, _ := strconv.Atoi(productId)
 
-	newProduct := NewProduct(0, 0, "", "")
+	newProduct := NewProduct(0, 0, "", 0.0)
 
 	if len(productId) == 0 {
 		return *newProduct, errors.New("we got an empty id")
 	}
 
-	product, err := s.repository.getProduct(idconv)
+	product, err := s.repository.GetProduct(idconv)
 
 	if err != nil {
 		return *newProduct, err
@@ -40,7 +40,7 @@ func (s *service) getProduct(productId string) (Product, error) {
 }
 
 func (s *service) getProductList() ([]Product, error) {
-	productList, err := s.repository.getProductList()
+	productList, err := s.repository.GetProductList()
 
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (s *service) getProductList() ([]Product, error) {
 
 func (s *service) createProduct(product Product) (Product, error) {
 
-	createdProduct, err := s.repository.createProduct(product)
+	createdProduct, err := s.repository.CreateProduct(product)
 
 	if err != nil {
 		return createdProduct, err
@@ -63,13 +63,13 @@ func (s *service) createProduct(product Product) (Product, error) {
 func (s *service) updateProduct(productId string, product Product) (Product, error) {
 	idconv, _ := strconv.Atoi(productId)
 
-	newProduct := NewProduct(0, 0, "", "")
+	newProduct := NewProduct(0, 0, "", 0.0)
 
 	if len(productId) == 0 {
 		return *newProduct, errors.New("we got an empty id")
 	}
 
-	updatedProduct, err := s.repository.updateProduct(idconv, product)
+	updatedProduct, err := s.repository.UpdateProduct(idconv, product)
 
 	if err != nil {
 		return *newProduct, err
@@ -85,7 +85,7 @@ func (s *service) deleteProduct(productId string) (bool, error){
 		return false, errors.New("we got an empty id")
 	}
 
-	isDeleted, err := s.repository.deleteProduct(idconv)
+	isDeleted, err := s.repository.DeleteProduct(idconv)
 
 	if err != nil {
 		return false, err

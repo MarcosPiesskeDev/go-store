@@ -67,7 +67,7 @@ func (h *handler) getProduct(rw http.ResponseWriter, req *http.Request) {
 
 //Create Product
 func (h *handler) createProduct(rw http.ResponseWriter, req *http.Request) {
-	product := NewProduct(0, 0, "", "")
+	product := NewProduct(0, 0, "", 0.0)
 
 	if err := json.NewDecoder(req.Body).Decode(&product); err != nil {
 		http_response.ErrResponse(rw, http.StatusBadRequest, err.Error())
@@ -88,7 +88,7 @@ func (h *handler) createProduct(rw http.ResponseWriter, req *http.Request) {
 func (h *handler) updateProduct(rw http.ResponseWriter, req *http.Request) {
 	id := strings.TrimPrefix(req.URL.Path, "/product/")
 
-	product := NewProduct(0, 0, "", "")
+	product := NewProduct(0, 0, "", 0.0)
 
 	if len(id) > 0 {
 		err := json.NewDecoder(req.Body).Decode(&product)

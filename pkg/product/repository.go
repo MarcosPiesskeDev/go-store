@@ -8,11 +8,12 @@ import (
 )
 
 type Repository interface {
-	createProduct(product Product) (Product, error)
-	getProduct(productId int) (Product, error)
-	getProductList() ([]Product, error)
-	updateProduct(productId int, product Product) (Product, error)
-	deleteProduct(productId int) (bool, error)
+	GetProduct(productId int) (Product, error)
+	GetProductList() ([]Product, error)
+	GetProductListByStoreId(storeId int) ([]Product, error)
+	CreateProduct(product Product) (Product, error)
+	UpdateProduct(productId int, product Product) (Product, error)
+	DeleteProduct(productId int) (bool, error)
 }
 
 type repository struct {
@@ -23,7 +24,7 @@ func NewRepository(db *sql.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r repository) createProduct(product Product) (Product, error) {
+func (r repository) CreateProduct(product Product) (Product, error) {
 	rows, err := r.db.Exec("INSERT INTO product (id_store, name, price) VALUES (?,?,?)", product.idStore, product.name, product.price)
 
 	defer func(db *sql.DB) {
@@ -48,9 +49,9 @@ func (r repository) createProduct(product Product) (Product, error) {
 	return product, nil
 }
 
-func (r repository) getProduct(productId int) (Product, error) {
+func (r repository) GetProduct(productId int) (Product, error) {
 
-	product := NewProduct(0, 0, "", "")
+	product := NewProduct(0, 0, "", 0.0)
 
 	rows, err := r.db.Query("SELECT * FROM product WHERE id = ?", productId)
 
@@ -78,8 +79,31 @@ func (r repository) getProduct(productId int) (Product, error) {
 	return *product, nil
 }
 
-func (r repository) getProductList() ([]Product, error) {
-	product := NewProduct(0, 0, "", "")
+func (r repository) GetProductListByStoreId(storeId int) ([]Product, error){
+	rows, err := r.db.Query("SELECT * FROM product WHERE id_store = ?", storeId)
+
+	if err != nil {
+		return nil, err
+	}
+	var product = *NewProduct(0, 0, "", 0.0)
+	var productList []Product
+
+	for rows.Next() {
+		err := rows.Scan(&product.id, &product.idStore, &product.name, &product.price)
+
+		if err != nil {
+			return nil, err
+		}
+
+		productAtt := *NewProduct(product.id, product.idStore, product.name, product.price)
+		productList = append(productList, productAtt)
+	}
+
+	return productList, nil
+}
+
+func (r repository) GetProductList() ([]Product, error) {
+	product := NewProduct(0, 0, "", 0.0)
 
 	rows, err := r.db.Query("SELECT * FROM product")
 
@@ -111,7 +135,7 @@ func (r repository) getProductList() ([]Product, error) {
 	return productList, nil
 }
 
-func (r repository) updateProduct(productId int, product Product) (Product, error) {
+func (r repository) UpdateProduct(productId int, product Product) (Product, error) {
 
 	_, err := r.db.Query("UPDATE product SET  id_store = ?, name = ?, price = ? WHERE id = ?", product.id, product.name, product.price, productId)
 
@@ -122,7 +146,7 @@ func (r repository) updateProduct(productId int, product Product) (Product, erro
 	return product, nil
 }
 
-func (r repository) deleteProduct(productId int) (bool, error) {
+func (r repository) DeleteProduct(productId int) (bool, error) {
 
 	_, err := r.db.Query("DELETE FROM product WHERE id = ?", productId)
 

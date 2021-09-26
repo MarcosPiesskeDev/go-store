@@ -3,21 +3,11 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
-
-	"github.com/joho/godotenv"
-
 	_ "github.com/go-sql-driver/mysql"
+	"os"
 )
 
 func GetConn() (*sql.DB, error) {
-
-	err := godotenv.Load()
-
-	if err != nil {
-		log.Fatal("Error to initialize .env -> ", err)
-	}
 
 	sqlDriver := os.Getenv("SQL_DRIVER")
 	dbHost := os.Getenv("MYSQL_HOST")

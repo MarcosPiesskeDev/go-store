@@ -11,7 +11,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/marcos-dev88/go-store-back/pkg/database"
 	"github.com/marcos-dev88/go-store-back/pkg/di"
 )
 
@@ -34,7 +33,7 @@ func main() {
 	clientHandler := client.NewHandler(container.GetClientService())
 	productHandler := product.NewHandler(container.GetProductService())
 
-	db, _ := database.GetConn()
+	db, _ := container.GetDb()
 	defer db.Close()
 
 	fmt.Printf("\nServer is running on port %s ...", port)

@@ -20,6 +20,10 @@ type handler struct {
 	service Service
 }
 
+func NewHandler(service Service) *handler{
+	return &handler{service: service}
+}
+
 func (h handler) StoreHandler(rw http.ResponseWriter, req *http.Request){
 	switch req.Method {
 	case "GET":

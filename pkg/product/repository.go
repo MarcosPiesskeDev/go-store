@@ -25,7 +25,7 @@ func NewRepository(db *sql.DB) *repository {
 }
 
 func (r repository) CreateProduct(product Product) (Product, error) {
-	rows, err := r.db.Exec("INSERT INTO product (id_store, name, price) VALUES (?,?,?)", product.idStore, product.name, product.price)
+	rows, err := r.db.Exec("INSERT INTO product (id_store, name, price) VALUES (?,?,?)", product.IdStore, product.Name, product.Price)
 
 	defer func(db *sql.DB) {
 		err := db.Close()
@@ -38,7 +38,7 @@ func (r repository) CreateProduct(product Product) (Product, error) {
 		return product, err
 	}
 
-	var parsIdInt = int64(product.id)
+	var parsIdInt = int64(product.ID)
 
 	if reflect.TypeOf(parsIdInt).Kind() == reflect.String {
 		return product, errors.New("we got an id with a type string and we need with type int")
@@ -67,13 +67,13 @@ func (r repository) GetProduct(productId int) (Product, error) {
 	}
 
 	for rows.Next() {
-		er := rows.Scan(&product.id, &product.idStore, &product.name, &product.price)
+		er := rows.Scan(&product.ID, &product.IdStore, &product.Name, &product.Price)
 
 		if er != nil {
 			return *product, er
 		}
 
-		product = NewProduct(product.id, product.idStore, product.name, product.price)
+		product = NewProduct(product.ID, product.IdStore, product.Name, product.Price)
 	}
 
 	return *product, nil
@@ -89,13 +89,13 @@ func (r repository) GetProductListByStoreId(storeId int) ([]Product, error){
 	var productList []Product
 
 	for rows.Next() {
-		err := rows.Scan(&product.id, &product.idStore, &product.name, &product.price)
+		err := rows.Scan(&product.ID, &product.IdStore, &product.Name, &product.Price)
 
 		if err != nil {
 			return nil, err
 		}
 
-		productAtt := *NewProduct(product.id, product.idStore, product.name, product.price)
+		productAtt := *NewProduct(product.ID, product.IdStore, product.Name, product.Price)
 		productList = append(productList, productAtt)
 	}
 
@@ -121,13 +121,13 @@ func (r repository) GetProductList() ([]Product, error) {
 	var productList []Product
 
 	for rows.Next() {
-		err := rows.Scan(&product.id, &product.idStore, &product.name, &product.price)
+		err := rows.Scan(&product.ID, &product.IdStore, &product.Name, &product.Price)
 
 		if err != nil {
 			return nil, err
 		}
 
-		product = NewProduct(product.id, product.idStore, product.name, product.price)
+		product = NewProduct(product.ID, product.IdStore, product.Name, product.Price)
 
 		productList = append(productList, *product)
 	}
@@ -137,7 +137,7 @@ func (r repository) GetProductList() ([]Product, error) {
 
 func (r repository) UpdateProduct(productId int, product Product) (Product, error) {
 
-	_, err := r.db.Query("UPDATE product SET  id_store = ?, name = ?, price = ? WHERE id = ?", product.id, product.name, product.price, productId)
+	_, err := r.db.Query("UPDATE product SET  id_store = ?, name = ?, price = ? WHERE id = ?", product.ID, product.Name, product.Price, productId)
 
 	if err != nil {
 		return product, err

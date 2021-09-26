@@ -20,15 +20,15 @@ type Repository interface {
 }
 
 type repository struct {
-	db *sql.DB
-	clientRepo client.Repository
+	db           *sql.DB
+	clientRepo   client.Repository
 	productsRepo product.Repository
 }
 
 func NewRepository(db *sql.DB, clientRepo client.Repository, productRepo product.Repository) *repository {
 	return &repository{
-		db: db,
-		clientRepo: clientRepo,
+		db:           db,
+		clientRepo:   clientRepo,
 		productsRepo: productRepo,
 	}
 }
@@ -37,11 +37,7 @@ func (r *repository) getStoreList() ([]Store, error) {
 	var storeList []Store
 	newStore := NewStore(0, "", "", "", "", "", nil, nil)
 
-	rows, err := r.db.Query(
-		"SELECT * FROM store " +
-			"INNER JOIN product p ON p.id_store = store.id " +
-			"INNER JOIN client c c.id_store",
-	)
+	rows, err := r.db.Query("SELECT * FROM store")
 
 	if err != nil {
 		return nil, err
@@ -49,21 +45,21 @@ func (r *repository) getStoreList() ([]Store, error) {
 
 	for rows.Next() {
 		err := rows.Scan(
-			&newStore.id,
-			&newStore.cnpj,
-			&newStore.name,
-			&newStore.companyName,
-			&newStore.city,
-			&newStore.state,
+			&newStore.ID,
+			&newStore.Cnpj,
+			&newStore.Name,
+			&newStore.CompanyName,
+			&newStore.City,
+			&newStore.State,
 		)
 
-		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.id)
+		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.ID)
 
 		if err != nil {
 			return nil, err
 		}
 
-		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.id)
+		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.ID)
 
 		if err != nil {
 			return nil, err
@@ -74,12 +70,12 @@ func (r *repository) getStoreList() ([]Store, error) {
 		}
 
 		storeAtt := NewStore(
-			newStore.id,
-			newStore.cnpj,
-			newStore.name,
-			newStore.companyName,
-			newStore.city,
-			newStore.state,
+			newStore.ID,
+			newStore.Cnpj,
+			newStore.Name,
+			newStore.CompanyName,
+			newStore.City,
+			newStore.State,
 			clientListByStoreId,
 			productListByStoreId,
 		)
@@ -93,12 +89,7 @@ func (r *repository) getStoreList() ([]Store, error) {
 func (r *repository) getStoreById(storeId int) (Store, error) {
 	newStore := *NewStore(0, "", "", "", "", "", nil, nil)
 
-	rows, err := r.db.Query(
-		"SELECT * FROM store "+
-			"INNER JOIN product p ON p.id_store = store.id "+
-			"INNER JOIN client c c.id_store = store.id "+
-			"WHERE id = ?", storeId,
-	)
+	rows, err := r.db.Query("SELECT * FROM store WHERE id = ?", storeId)
 
 	if err != nil {
 		return newStore, err
@@ -106,21 +97,21 @@ func (r *repository) getStoreById(storeId int) (Store, error) {
 
 	for rows.Next() {
 		err := rows.Scan(
-			&newStore.id,
-			&newStore.cnpj,
-			&newStore.name,
-			&newStore.companyName,
-			&newStore.city,
-			&newStore.state,
+			&newStore.ID,
+			&newStore.Cnpj,
+			&newStore.Name,
+			&newStore.CompanyName,
+			&newStore.City,
+			&newStore.State,
 		)
 
-		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.id)
+		clientListByStoreId, err := r.clientRepo.GetClientsByStoreId(newStore.ID)
 
 		if err != nil {
 			return newStore, err
 		}
 
-		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.id)
+		productListByStoreId, err := r.productsRepo.GetProductListByStoreId(newStore.ID)
 
 		if err != nil {
 			return newStore, err
@@ -131,12 +122,12 @@ func (r *repository) getStoreById(storeId int) (Store, error) {
 		}
 
 		newStore = *NewStore(
-			newStore.id,
-			newStore.cnpj,
-			newStore.name,
-			newStore.companyName,
-			newStore.city,
-			newStore.state,
+			newStore.ID,
+			newStore.Cnpj,
+			newStore.Name,
+			newStore.CompanyName,
+			newStore.City,
+			newStore.State,
 			clientListByStoreId,
 			productListByStoreId,
 		)
@@ -150,18 +141,19 @@ func (r *repository) createStore(store Store) (Store, error) {
 
 	rows, err := r.db.Exec(
 		"INSERT INTO store(cnpj, name, company_name, city, state) VALUES (?,?,?,?,?)",
-			store.id,
-			store.cnpj,
-			store.companyName,
-			store.city,
-			store.state,
+			store.ID,
+			store.Cnpj,
+			store.Name,
+			store.CompanyName,
+			store.City,
+			store.State,
 		)
 
 	if err != nil {
 		return *newStore, nil
 	}
 
-	parsIdInt := int64(store.id)
+	parsIdInt := int64(store.ID)
 	if reflect.TypeOf(parsIdInt).Kind() == reflect.String {
 		log.Println("We got an id with a type string and we need with type int")
 	}
@@ -180,11 +172,12 @@ func (r *repository) updateStore(storeId int, store Store) (Store, error) {
 	}
 
 	_, err := r.db.Query("UPDATE store SET (cnpj = ?, name = ?, company_name = ?, city = ?, state = ? WHERE id = ?",
-		store.cnpj,
-		store.name,
-		store.companyName,
-		store.city,
-		store.state,
+		store.ID,
+		store.Cnpj,
+		store.Name,
+		store.CompanyName,
+		store.City,
+		store.State,
 	)
 
 	if err != nil {

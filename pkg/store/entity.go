@@ -6,25 +6,25 @@ import (
 )
 
 type Store struct {
-	id          int               `json:"id"`
-	cnpj        string            `json:"cnpj"`
-	name        string            `json:"name"`
-	companyName string            `json:"company_name"`
-	city        string            `json:"city"`
-	state       string            `json:"state"`
-	clients     []client.Client   `json:"clients"`
-	products    []product.Product `json:"products"`
+	ID          int               `json:"id"`
+	Cnpj        string            `json:"cnpj"`
+	Name        string            `json:"name"`
+	CompanyName string            `json:"company_name"`
+	City        string            `json:"city"`
+	State       string            `json:"state"`
+	Clients     []client.Client   `json:"clients"`
+	Products    []product.Product `json:"products"`
 }
 
 func NewStore(id int, cnpj, name, companyName, city, state string, clients []client.Client, products []product.Product) *Store {
 	return &Store{
-		id:          id,
-		cnpj:        cnpj,
-		name:        name,
-		companyName: companyName,
-		city:        city,
-		state:       state,
-		clients:     clients,
-		products:    products,
+		ID:          id,
+		Cnpj:        cnpj,
+		Name:        name,
+		CompanyName: companyName,
+		City:        city,
+		State:       state,
+		Clients:     clients,
+		Products:    products,
 	}
 }

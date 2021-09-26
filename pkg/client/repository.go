@@ -37,15 +37,15 @@ func (r *repository) GetAllClient() ([]Client, error) {
 
 	for rows.Next() {
 		er := rows.Scan(
-			&client.id,
-			&client.idStore,
-			&client.nickName,
-			&client.password,
-			&client.role,
-			&client.firstName,
-			&client.lastName,
-			&client.cash,
-			&client.birthDate,
+			&client.ID,
+			&client.IdStore,
+			&client.NickName,
+			&client.Password,
+			&client.Role,
+			&client.FirstName,
+			&client.LastName,
+			&client.Cash,
+			&client.BirthDate,
 			)
 
 		if er != nil {
@@ -53,15 +53,15 @@ func (r *repository) GetAllClient() ([]Client, error) {
 		}
 
 		clientAtt := *NewClient(
-			client.id,
-			client.idStore,
-			client.nickName,
-			client.password,
-			client.role,
-			client.firstName,
-			client.lastName,
-			client.cash,
-			client.birthDate,
+			client.ID,
+			client.IdStore,
+			client.NickName,
+			client.Password,
+			client.Role,
+			client.FirstName,
+			client.LastName,
+			client.Cash,
+			client.BirthDate,
 		)
 
 		clients = append(clients, clientAtt)
@@ -81,15 +81,15 @@ func (r *repository) GetClientById(id int) (Client, error) {
 	for rows.Next() {
 
 		er := rows.Scan(
-			&client.id,
-			&client.idStore,
-			&client.nickName,
-			&client.password,
-			&client.role,
-			&client.firstName,
-			&client.lastName,
-			&client.cash,
-			&client.birthDate,
+			&client.ID,
+			&client.IdStore,
+			&client.NickName,
+			&client.Password,
+			&client.Role,
+			&client.FirstName,
+			&client.LastName,
+			&client.Cash,
+			&client.BirthDate,
 		)
 
 		if er != nil {
@@ -97,15 +97,15 @@ func (r *repository) GetClientById(id int) (Client, error) {
 		}
 
 		client = *NewClient(
-			client.id,
-			client.idStore,
-			client.nickName,
-			client.password,
-			client.role,
-			client.firstName,
-			client.lastName,
-			client.cash,
-			client.birthDate,
+			client.ID,
+			client.IdStore,
+			client.NickName,
+			client.Password,
+			client.Role,
+			client.FirstName,
+			client.LastName,
+			client.Cash,
+			client.BirthDate,
 		)
 	}
 	return client, nil
@@ -122,15 +122,15 @@ func (r *repository) GetClientsByStoreId(storeId int) ([]Client, error) {
 
 	for rows.Next() {
 		er := rows.Scan(
-			&client.id,
-			&client.idStore,
-			&client.nickName,
-			&client.password,
-			&client.role,
-			&client.firstName,
-			&client.lastName,
-			&client.cash,
-			&client.birthDate,
+			&client.ID,
+			&client.IdStore,
+			&client.NickName,
+			&client.Password,
+			&client.Role,
+			&client.FirstName,
+			&client.LastName,
+			&client.Cash,
+			&client.BirthDate,
 		)
 
 		if er != nil {
@@ -138,15 +138,15 @@ func (r *repository) GetClientsByStoreId(storeId int) ([]Client, error) {
 		}
 
 		clientAtt := *NewClient(
-			client.id,
-			client.idStore,
-			client.nickName,
-			client.password,
-			client.role,
-			client.firstName,
-			client.lastName,
-			client.cash,
-			client.birthDate,
+			client.ID,
+			client.IdStore,
+			client.NickName,
+			client.Password,
+			client.Role,
+			client.FirstName,
+			client.LastName,
+			client.Cash,
+			client.BirthDate,
 		)
 
 		clients = append(clients, clientAtt)
@@ -156,16 +156,17 @@ func (r *repository) GetClientsByStoreId(storeId int) ([]Client, error) {
 
 //Method create client
 func (r *repository) CreateClient(client Client) (Client, error) {
-	dbStr := client.birthDate
+	dbStr := client.BirthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 	rows, err := r.db.Exec("INSERT INTO client (id_store, nick_name, password, role, first_name, last_name, cash, birth_date) VALUES (?,?,?,?,?,?,?,?)",
-		client.idStore,
-		client.nickName,
-		client.password,
-		client.role,
-		client.firstName,
-		client.lastName,
-		client.cash,
+		client.ID,
+		client.IdStore,
+		client.NickName,
+		client.Password,
+		client.Role,
+		client.FirstName,
+		client.LastName,
+		client.Cash,
 		dbDateFormated,
 	)
 
@@ -173,7 +174,7 @@ func (r *repository) CreateClient(client Client) (Client, error) {
 		return Client{}, err
 	}
 
-	var parsIdInt = int64(client.id)
+	var parsIdInt = int64(client.ID)
 	if reflect.TypeOf(parsIdInt).Kind() == reflect.String {
 		log.Println("We got an id with a type string and we need with type int")
 	}
@@ -186,14 +187,14 @@ func (r *repository) CreateClient(client Client) (Client, error) {
 //Method update client
 func (r *repository) UpdateClient(id int, client Client) (Client, error) {
 	idExists := database.VerifySExists(id, "client") // IT NEEDS TO BE REFACTORED
-	dbStr := client.birthDate
+	dbStr := client.BirthDate
 	dbDateFormated := dbStr.Format("01-02-2006")
 
 	if !idExists {
 		return Client{}, errors.New("doesn't a client with this id")
 	}
 
-	_, er := r.db.Query("UPDATE client SET id_store = ?, nick_name = ?, password = ?, role = ?, first_name = ?, last_name = ?, cash = ?, birth_date = ? WHERE id = ?", client.id, client.idStore, client.nickName, client.password, client.role, client.firstName, client.lastName, client.cash, dbDateFormated)
+	_, er := r.db.Query("UPDATE client SET id_store = ?, nick_name = ?, password = ?, role = ?, first_name = ?, last_name = ?, cash = ?, birth_date = ? WHERE id = ?", client.ID, client.IdStore, client.NickName, client.Password, client.Role, client.FirstName, client.LastName, client.Cash, dbDateFormated)
 
 	if er != nil {
 		return Client{}, er

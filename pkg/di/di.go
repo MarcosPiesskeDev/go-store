@@ -2,21 +2,38 @@ package di
 
 import (
 	"database/sql"
+	"github.com/marcos-dev88/go-store-back/pkg/client"
+	"github.com/marcos-dev88/go-store-back/pkg/database"
+	"github.com/marcos-dev88/go-store-back/pkg/product"
+	"github.com/marcos-dev88/go-store-back/pkg/store"
 	"log"
-
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/repository"
-
-	"github.com/MarcosPiesskeDev/go-store-back/pkg/database"
 )
 
-type Container struct {
-	Db          *sql.DB
-	storeRepo   *repository.StoreModel
-	clientRepo  *repository.ClientModel
-	productRepo *repository.ProductModel
+type Container interface {
+	GetDb() (*sql.DB, error)
+	GetClientRepository() client.Repository
+	GetClientService() client.Service
+	GetProductRepository() product.Repository
+	GetProductService() product.Service
+	GetStoreRepository() store.Repository
+	GetStoreService() store.Service
 }
 
-func (co *Container) GetDb() (*sql.DB, error) {
+type container struct {
+	Db          *sql.DB
+	storeRepo   store.Repository
+	storeService store.Service
+	clientRepo  client.Repository
+	clientService client.Service
+	productRepo product.Repository
+	productService product.Service
+}
+
+func NewContainer() *container {
+	return &container{}
+}
+
+func (co container) GetDb() (*sql.DB, error) {
 	if co.Db == nil {
 		var err error
 		co.Db, err = database.GetConn()
@@ -27,38 +44,59 @@ func (co *Container) GetDb() (*sql.DB, error) {
 	return co.Db, nil
 }
 
-func (co *Container) GetStoreModel() *repository.StoreModel {
-	if co.storeRepo == nil {
-		db, err := co.GetDb()
-		if err != nil {
-			log.Fatal("Error on Db DI-> ", err)
-			return nil
-		}
-		co.storeRepo = repository.NewStoreModel(db)
-	}
-	return co.storeRepo
-}
-
-func (co *Container) GetClientModel() *repository.ClientModel {
+func (co container) GetClientRepository() client.Repository {
 	if co.clientRepo == nil {
 		db, err := co.GetDb()
 		if err != nil {
 			log.Fatal("Error on Db DI-> ", err)
 			return nil
 		}
-		co.clientRepo = repository.NewClientModel(db)
+		co.clientRepo = client.NewRepository(db)
 	}
 	return co.clientRepo
 }
 
-func (co *Container) GetProductModel() *repository.ProductModel {
+func (co container) GetClientService() client.Service {
+	if co.clientService == nil {
+		co.clientService = client.NewService(co.GetClientRepository())
+	}
+	return co.clientService
+}
+
+func (co *container) GetProductRepository() product.Repository {
 	if co.productRepo == nil {
 		db, err := co.GetDb()
 		if err != nil {
 			log.Fatal("Error on Db DI-> ", err)
 			return nil
 		}
-		co.productRepo = repository.NewProductModel(db)
+		co.productRepo = product.NewRepository(db)
 	}
 	return co.productRepo
+}
+
+func (co container) GetProductService() product.Service {
+	if co.productService == nil {
+		co.productService = product.NewService(co.GetProductRepository())
+	}
+	return co.productService
+}
+
+func (co container) GetStoreRepository() store.Repository {
+	if co.storeRepo == nil {
+		db, err := co.GetDb()
+		if err != nil {
+			log.Fatal("Error on Db DI-> ", err)
+			return nil
+		}
+		co.storeRepo = store.NewRepository(db, co.GetClientRepository(), co.GetProductRepository())
+	}
+	return co.storeRepo
+}
+
+func (co container) GetStoreService() store.Service {
+	if co.storeService == nil {
+		co.storeService = store.NewService(co.GetStoreRepository())
+	}
+	return co.storeService
 }

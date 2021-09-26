@@ -3,12 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/marcos-dev88/go-store-back/pkg/client"
+	"github.com/marcos-dev88/go-store-back/pkg/product"
+	"github.com/marcos-dev88/go-store-back/pkg/store"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/marcos-dev88/go-store-back/pkg/controller"
 	"github.com/marcos-dev88/go-store-back/pkg/database"
 	"github.com/marcos-dev88/go-store-back/pkg/di"
 )
@@ -26,18 +28,19 @@ func main() {
 		port = ":8080"
 	}
 
-	c := &di.Container{}
-	storeController := controller.NewStoreController(c.GetStoreModel())
-	clientController := controller.NewClientController(c.GetClientModel())
-	productController := controller.NewProductController(c.GetProductModel())
+	container := di.NewContainer()
+
+	storeHandler := store.NewHandler(container.GetStoreService())
+	clientHandler := client.NewHandler(container.GetClientService())
+	productHandler := product.NewHandler(container.GetProductService())
 
 	db, _ := database.GetConn()
 	defer db.Close()
 
 	fmt.Printf("\nServer is running on port %s ...", port)
-	http.HandleFunc("/store/", storeController.InitStoreMethods)
-	http.HandleFunc("/client/", clientController.InitClientMethods)
-	http.HandleFunc("/product/", productController.InitProductMethods)
+	http.HandleFunc("/store/", storeHandler.StoreHandler)
+	http.HandleFunc("/client/", clientHandler.ClientHandler)
+	http.HandleFunc("/product/", productHandler.ProductHandler)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
 
